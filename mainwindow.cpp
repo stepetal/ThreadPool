@@ -108,46 +108,52 @@ void MainWindow::createConnections()
 
     connect(cancelTaskAction,&QAction::triggered,[&]()
     {
-        QStandardItem *curRowItem = tasksTableModel.data()->itemFromIndex(tasksTableView->currentIndex());
-        QStandardItem *taskIdItem = tasksTableModel.data()->item(curRowItem->row(),SYS::toUType(SYS::enum_table_headers::ID));
-        QStandardItem *taskStatusItem = tasksTableModel.data()->item(curRowItem->row(),SYS::toUType(SYS::enum_table_headers::STATUS));
-        // если задача в очереди, то отменяем ее
-        if(taskStatusItem->data(SYS::toUType(SYS::table_roles::STATUS_ROLE)) == SYS::toUType(SYS::enum_status::IN_QUEUE))
+        if(tasksTableView->selectionModel()->hasSelection())
         {
-            if(cancelTask(taskIdItem->data(Qt::DisplayRole).toInt()))
+            QStandardItem *curRowItem = tasksTableModel.data()->itemFromIndex(tasksTableView->currentIndex());
+            QStandardItem *taskIdItem = tasksTableModel.data()->item(curRowItem->row(),SYS::toUType(SYS::enum_table_headers::ID));
+            QStandardItem *taskStatusItem = tasksTableModel.data()->item(curRowItem->row(),SYS::toUType(SYS::enum_table_headers::STATUS));
+            // если задача в очереди, то отменяем ее
+            if(taskStatusItem->data(SYS::toUType(SYS::table_roles::STATUS_ROLE)) == SYS::toUType(SYS::enum_status::IN_QUEUE))
             {
-                statusBar()->showMessage(QString("Задача отменена"),2000);
+                if(cancelTask(taskIdItem->data(Qt::DisplayRole).toInt()))
+                {
+                    statusBar()->showMessage(QString("Задача отменена"),2000);
+                }
             }
         }
     });
 
     connect(deleteTaskAction,&QAction::triggered,[&]()
     {
-        QStandardItem *curRowItem = tasksTableModel.data()->itemFromIndex(tasksTableView->currentIndex());
-        QStandardItem *taskIdItem = tasksTableModel.data()->item(curRowItem->row(),SYS::toUType(SYS::enum_table_headers::ID));
-        QStandardItem *taskStatusItem = tasksTableModel.data()->item(curRowItem->row(),SYS::toUType(SYS::enum_table_headers::STATUS));
-        switch(taskStatusItem->data(SYS::toUType(SYS::table_roles::STATUS_ROLE)).toInt())
+        if(tasksTableView->selectionModel()->hasSelection())
         {
-            case SYS::toUType(SYS::enum_status::DONE):
+            QStandardItem *curRowItem = tasksTableModel.data()->itemFromIndex(tasksTableView->currentIndex());
+            QStandardItem *taskIdItem = tasksTableModel.data()->item(curRowItem->row(),SYS::toUType(SYS::enum_table_headers::ID));
+            QStandardItem *taskStatusItem = tasksTableModel.data()->item(curRowItem->row(),SYS::toUType(SYS::enum_table_headers::STATUS));
+            switch(taskStatusItem->data(SYS::toUType(SYS::table_roles::STATUS_ROLE)).toInt())
             {
-                tasksTableModel->deleteEntry(tasksTableView->selectionModel()->selectedRows().first().row());
-                break;
-            }
-            case SYS::toUType(SYS::enum_status::CANCELLED):
-            {
-                tasksTableModel->deleteEntry(tasksTableView->selectionModel()->selectedRows().first().row());
-                break;
-            }
-            case SYS::toUType(SYS::enum_status::IN_QUEUE):
-            {
-                if(cancelTask(taskIdItem->data(Qt::DisplayRole).toInt()))
+                case SYS::toUType(SYS::enum_status::DONE):
                 {
                     tasksTableModel->deleteEntry(tasksTableView->selectionModel()->selectedRows().first().row());
-                    statusBar()->showMessage(QString("Задача удалена"),2000);
+                    break;
                 }
+                case SYS::toUType(SYS::enum_status::CANCELLED):
+                {
+                    tasksTableModel->deleteEntry(tasksTableView->selectionModel()->selectedRows().first().row());
+                    break;
+                }
+                case SYS::toUType(SYS::enum_status::IN_QUEUE):
+                {
+                    if(cancelTask(taskIdItem->data(Qt::DisplayRole).toInt()))
+                    {
+                        tasksTableModel->deleteEntry(tasksTableView->selectionModel()->selectedRows().first().row());
+                        statusBar()->showMessage(QString("Задача удалена"),2000);
+                    }
+                }
+                default:
+                    break;
             }
-            default:
-                break;
         }
     });
 
