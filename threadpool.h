@@ -19,6 +19,8 @@
 #include "globals.h"
 
 
+
+
 class ThreadPool : public QObject
 {
     Q_OBJECT
@@ -43,17 +45,21 @@ class ThreadPool : public QObject
               f = std::move(std::get<1>(work.front()));
               cur_task_id = std::get<0>(work.front());
               work.pop_front();
+              #if SILENT_MODE==0
               std::cout << "Thread with id starts its work" << std::this_thread::get_id() << std::endl;
               std::cout << "Work queue size is: " << work.size() << std::endl;
+              #endif
 
             }
             if (!f.valid())
             {
+                #if SILENT_MODE==0
                 {
                     std::lock_guard<std::mutex> lg(cout_mutex);
                     std::cout << "Function is invalid" << std::endl;
                     std::cout << "Non valid function: Work queue size is: " << work.size() << std::endl;
                 }
+                #endif
                 return;
             }
             emit updateStatusOfTask(std::make_tuple(cur_task_id,SYS::enum_status::RUNNING));
@@ -61,18 +67,6 @@ class ThreadPool : public QObject
             f();
             auto diff = std::chrono::system_clock::now() - start;
             emit updateResultOfTask(cur_task_id,std::chrono::duration<double,std::milli>(diff).count());
-//            //отправка сообщения об успешном завершении всех задач
-//            {
-//                std::unique_lock<std::mutex> l(m);
-//                if(work.size() == 0)
-//                {
-//                    {
-//                        std::lock_guard<std::mutex> lg(cout_mutex);
-//                        std::cout << "All tasks completed" << std::endl;
-//                    }
-//                    emit allTasksHaveBeenCompleted();
-//                }
-//            }
         }
     }
 
@@ -91,16 +85,18 @@ public:
          std::unique_lock<std::mutex> l(m);
          for(auto itr = work.begin();itr != work.end();++itr)
          {
-             auto t_id = std::get<0>(*itr);
-             if(task_id == t_id)
-             {
-                 {
-                    std::unique_lock<std::mutex> ul(cout_mutex);
-                    std::cout << "Queue contains task id is: " << task_id;
-                 }
-                 v.notify_all();
-                 return true;
-             }
+            auto t_id = std::get<0>(*itr);
+            if(task_id == t_id)
+            {
+                #if SILENT_MODE==0
+                {
+                std::unique_lock<std::mutex> ul(cout_mutex);
+                std::cout << "Queue contains task id is: " << task_id;
+                }
+                #endif
+                v.notify_all();
+                return true;
+            }
          }
          v.notify_all();
          return false;
@@ -114,12 +110,14 @@ public:
              auto t_id = std::get<0>(*itr);
              if(task_id == t_id)
              {
-                 {
-                    std::unique_lock<std::mutex> ul(cout_mutex);
-                    std::cout << "Cancelled task id is: " << task_id;
-                 }
-                 itr = work.erase(itr);
-                 emit updateStatusOfTask(std::make_tuple(task_id,SYS::enum_status::CANCELLED));
+                #if SILENT_MODE==0
+                {
+                std::unique_lock<std::mutex> ul(cout_mutex);
+                std::cout << "Cancelled task id is: " << task_id;
+                }
+                #endif
+                itr = work.erase(itr);
+                emit updateStatusOfTask(std::make_tuple(task_id,SYS::enum_status::CANCELLED));
              }
              else
              {
@@ -163,7 +161,6 @@ public:
       for(auto&& cancelled_task : work)
       {
           auto task_id = std::get<0>(cancelled_task);
-          std::cout << "Cancelled task id is: " << task_id;
           emit updateStatusOfTask(std::make_tuple(task_id,SYS::enum_status::CANCELLED));
       }
       work.clear();
@@ -176,10 +173,12 @@ public:
         for(auto&&unused:finished){
           work.push_back({});
         }
+        #if SILENT_MODE==0
         {
             std::lock_guard<std::mutex> lg(cout_mutex);
             std::cout << "Finish tasks: Work queue size is: " << work.size() << std::endl;
         }
+        #endif
         v.notify_all();
       }
       finished.clear();

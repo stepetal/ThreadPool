@@ -5,6 +5,7 @@
 #include <QDebug>
 #include <QPushButton>
 #include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QGridLayout>
 #include <QThread>
 #include <QSharedPointer>
@@ -48,10 +49,11 @@ class MainWindow : public QMainWindow
     std::vector<std::tuple<unsigned int,std::future<unsigned int>>> tasksResults;
     QSharedPointer<TasksTableModel> tasksTableModel;
     QTableView *tasksTableView;
-    unsigned int taskNumber;
+    unsigned int taskId;
     std::mutex cout_mutex;
     std::mutex tasks_results_mutex;
     QAction *cancelTaskAction;
+    QAction *deleteTaskAction;
     QAction *clearTableAction;
     QToolBar *editTableToolBar;
     QSpinBox *taskValueSpinBox;
@@ -63,13 +65,16 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
+    ~MainWindow();
     void createWidgets();
     void createActions();
     void createToolBar();
     void createConnections();
     void createLayout();
     void createModelAndView();
-    unsigned int generateTaskNumber();
-    ~MainWindow();
+private:
+    unsigned int generateTaskId();
+    bool cancelTask(unsigned int task_id);
+
 };
 #endif // MAINWINDOW_H

@@ -2,5 +2,6 @@
     <qresource prefix="/img">
         <file>images/Button-Close-icon.png</file>
         <file>images/Clear-icon.png</file>
+        <file>images/Editing-Delete-icon.png</file>
     </qresource>
 </RCC>

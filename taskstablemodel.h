@@ -30,11 +30,12 @@ public:
     explicit TasksTableModel(QObject *parent = nullptr);
     void setHeaderLabels();
     void setItemProperties(QStandardItem *item);
-    void createNewEntry(SYS::enum_status taskStatus, unsigned int taskNumber, QString taskDescription, unsigned int taskResult = 0, double task_duration = 0);
-    void updateEntry(unsigned int taskNumber, SYS::enum_status taskStatus, unsigned int taskResult = 0, double task_duration = 0);
-    void updateTaskStatus(unsigned int taskNumber, SYS::enum_status taskStatus);
-    void updateTaskResult(unsigned int taskNumber, unsigned int taskResult = 0);
-    SYS::enum_status getTaskStatus(unsigned int taskNumber);
+    void createNewEntry(SYS::enum_status taskStatus, unsigned int taskId, QString taskDescription, unsigned int taskResult = 0, double task_duration = 0);
+    void updateEntry(unsigned int taskId, SYS::enum_status taskStatus, unsigned int taskResult = 0, double task_duration = 0);
+    void deleteEntry(int row_numb);
+    void updateTaskStatus(unsigned int taskId, SYS::enum_status taskStatus);
+    void updateTaskResult(unsigned int taskId, unsigned int taskResult = 0);
+    SYS::enum_status getTaskStatus(unsigned int taskId);
     void clearTable();
     QString statusToString (SYS::enum_status value);
 };

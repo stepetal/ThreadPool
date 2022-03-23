@@ -11,16 +11,17 @@ void TasksTableModel::setHeaderLabels()
     setHorizontalHeaderLabels(QStringList() << QString("Номер") << QString("Описание") << QString("Текущий статус") << QString("Результат") << QString("Время выполнения, мс"));
 }
 
-void TasksTableModel::createNewEntry(SYS::enum_status taskStatus, unsigned int taskNumber, QString taskDescription, unsigned int taskResult,double task_duration)
+void TasksTableModel::createNewEntry(SYS::enum_status taskStatus, unsigned int taskId, QString taskDescription, unsigned int taskResult,double task_duration)
 {
-    QStandardItem *taskNumberItem = new QStandardItem();
+    QStandardItem *taskIdItem = new QStandardItem();
     QStandardItem *taskStatusItem = new QStandardItem();
     QStandardItem *taskDescriptionItem = new QStandardItem();
     QStandardItem *taskResultItem = new QStandardItem();
     QStandardItem *taskDurationItem = new QStandardItem();
-    taskNumberItem->setData(taskNumber,Qt::DisplayRole);
-    setItemProperties(taskNumberItem);
+    taskIdItem->setData(taskId,Qt::DisplayRole);
+    setItemProperties(taskIdItem);
     taskStatusItem->setData(statusToString(taskStatus),Qt::DisplayRole);
+    taskStatusItem->setData(SYS::toUType(taskStatus),SYS::toUType(SYS::table_roles::STATUS_ROLE));
     setItemProperties(taskStatusItem);
     taskDescriptionItem->setData(taskDescription,Qt::DisplayRole);
     setItemProperties(taskDescriptionItem);
@@ -28,30 +29,37 @@ void TasksTableModel::createNewEntry(SYS::enum_status taskStatus, unsigned int t
     setItemProperties(taskResultItem);
     taskDurationItem->setData(task_duration,Qt::DisplayRole);
     setItemProperties(taskDurationItem);
-    tasksTableItemsDict.insert(taskNumber,QList<QStandardItem*>() << taskNumberItem << taskDescriptionItem << taskStatusItem << taskResultItem << taskDurationItem);
-    insertRow(0,tasksTableItemsDict.value(taskNumber));
+    tasksTableItemsDict.insert(taskId,QList<QStandardItem*>() << taskIdItem << taskDescriptionItem << taskStatusItem << taskResultItem << taskDurationItem);
+    insertRow(0,tasksTableItemsDict.value(taskId));
 }
 
-void TasksTableModel::updateEntry(unsigned int taskNumber, SYS::enum_status taskStatus, unsigned int taskResult,double task_duration)
+void TasksTableModel::updateEntry(unsigned int taskId, SYS::enum_status taskStatus, unsigned int taskResult,double task_duration)
 {
-    tasksTableItemsDict.value(taskNumber).at(SYS::toUType(SYS::enum_table_headers::RESULT))->setData(taskResult, Qt::DisplayRole);
-    tasksTableItemsDict.value(taskNumber).at(SYS::toUType(SYS::enum_table_headers::STATUS))->setData(statusToString(taskStatus), Qt::DisplayRole);
-    tasksTableItemsDict.value(taskNumber).at(SYS::toUType(SYS::enum_table_headers::DURATION))->setData(task_duration, Qt::DisplayRole);
+    tasksTableItemsDict.value(taskId).at(SYS::toUType(SYS::enum_table_headers::RESULT))->setData(taskResult, Qt::DisplayRole);
+    tasksTableItemsDict.value(taskId).at(SYS::toUType(SYS::enum_table_headers::STATUS))->setData(statusToString(taskStatus), Qt::DisplayRole);
+    tasksTableItemsDict.value(taskId).at(SYS::toUType(SYS::enum_table_headers::STATUS))->setData(SYS::toUType(taskStatus), SYS::toUType(SYS::table_roles::STATUS_ROLE));
+    tasksTableItemsDict.value(taskId).at(SYS::toUType(SYS::enum_table_headers::DURATION))->setData(task_duration, Qt::DisplayRole);
 }
 
-void TasksTableModel::updateTaskStatus(unsigned int taskNumber, SYS::enum_status taskStatus)
+void TasksTableModel::deleteEntry(int row_numb)
 {
-    tasksTableItemsDict.value(taskNumber).at(SYS::toUType(SYS::enum_table_headers::STATUS))->setData(statusToString(taskStatus), Qt::DisplayRole);
+    removeRow(row_numb);
 }
 
-void TasksTableModel::updateTaskResult(unsigned int taskNumber, unsigned int taskResult)
+void TasksTableModel::updateTaskStatus(unsigned int taskId, SYS::enum_status taskStatus)
 {
-    tasksTableItemsDict.value(taskNumber).at(SYS::toUType(SYS::enum_table_headers::RESULT))->setData(taskResult, Qt::DisplayRole);
+    tasksTableItemsDict.value(taskId).at(SYS::toUType(SYS::enum_table_headers::STATUS))->setData(statusToString(taskStatus), Qt::DisplayRole);
+    tasksTableItemsDict.value(taskId).at(SYS::toUType(SYS::enum_table_headers::STATUS))->setData(SYS::toUType(taskStatus), SYS::toUType(SYS::table_roles::STATUS_ROLE));
 }
 
-SYS::enum_status TasksTableModel::getTaskStatus(unsigned int taskNumber)
+void TasksTableModel::updateTaskResult(unsigned int taskId, unsigned int taskResult)
 {
-    return static_cast<SYS::enum_status>(tasksTableItemsDict.value(taskNumber).at(SYS::toUType(SYS::enum_table_headers::STATUS))->data(Qt::DisplayRole).toInt());
+    tasksTableItemsDict.value(taskId).at(SYS::toUType(SYS::enum_table_headers::RESULT))->setData(taskResult, Qt::DisplayRole);
+}
+
+SYS::enum_status TasksTableModel::getTaskStatus(unsigned int taskId)
+{
+    return static_cast<SYS::enum_status>(tasksTableItemsDict.value(taskId).at(SYS::toUType(SYS::enum_table_headers::STATUS))->data(SYS::toUType(SYS::table_roles::STATUS_ROLE)).toInt());
 }
 
 void TasksTableModel::setItemProperties(QStandardItem *item)

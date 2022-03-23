@@ -5,11 +5,15 @@
 #include <QString>
 #include <QMetaEnum>
 
+#define SILENT_MODE 1
+
 namespace SYS
 {
     enum class enum_status { IN_QUEUE, RUNNING, DONE, CANCELLED };
 
     enum class enum_table_headers { ID, DESCRIPTION, STATUS, RESULT, DURATION};
+
+    enum class table_roles {roleId = Qt::UserRole, STATUS_ROLE };
 
     /* возвращает приведенное к родному типу значение класса enum'a */
     template<typename E>
